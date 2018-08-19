@@ -8,16 +8,17 @@
 
 import UIKit
 
-public class Dog: NSObject {
+public class Photo: NSObject {
 
     var title:String
+    var id:String
     var image:UIImage?
     var url:String
     
     
-    init(title: String, image: String, url: String) {
+    init(title: String, id: String, url: String) {
         self.title = title
-        self.image = UIImage.init(named: image)
+        self.id = id
         self.url = url
     }
 }

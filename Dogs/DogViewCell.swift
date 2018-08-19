@@ -13,8 +13,17 @@ public class DogViewCell: UICollectionViewCell {
     
     @IBOutlet weak var dogImageView: UIImageView!
     
-    public func configure(with model: Dog) {
+    public func configure(with model: Photo) {
         dogImageView.image = model.image
         titleLabel.text = model.title
+        let url = URL(string: model.url)
+        print(model.url)
+        let data = try? Data(contentsOf: url!)
+        
+        if let imageData = data {
+            if let image = UIImage(data: imageData) {
+                dogImageView.image = image 
+            }
+        }
     }
 }

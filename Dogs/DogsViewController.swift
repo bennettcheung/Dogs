@@ -9,10 +9,16 @@
 import UIKit
 
 private let reuseIdentifier = "DogCell"
-private var dogArray:[Dog] = []
+private var dogArray:[Photo] = []
+
 
 class DogsViewController: UICollectionViewController {
 
+    // 1
+    let defaultSession = URLSession(configuration: .default)
+    // 2
+    var dataTask: URLSessionDataTask?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -20,7 +26,7 @@ class DogsViewController: UICollectionViewController {
         // self.clearsSelectionOnViewWillAppear = false
 
         // Do any additional setup after loading the view.
-        self.setupData()
+        self.getSearchResults()
     }
 
     override func didReceiveMemoryWarning() {
@@ -28,13 +34,6 @@ class DogsViewController: UICollectionViewController {
         // Dispose of any resources that can be recreated.
     }
 
-    
-    func setupData() {
-        let dog1 = Dog.init(title: "Dog 1", image: "image1", url: "")
-        let dog2 = Dog.init(title: "Dog 2", image: "image2", url: "")
-        
-        dogArray = [dog1, dog2]
-    }
     
     /*
     // MARK: - Navigation
@@ -62,6 +61,58 @@ class DogsViewController: UICollectionViewController {
     
         return cell
     }
+
+    func getSearchResults() {
+        let url = URL(string: "https://api.flickr.com/services/rest/?method=flickr.photos.search&format=json&nojsoncallback=1&api_key=8759bfb887b8e55c9a7515d8ae1fe5ca&tags=dog")
+        
+        let task = URLSession.shared.dataTask(with: url!) {(data, response, error) in
+            
+            guard error == nil else {
+                print("returning error")
+                return
+            }
+            
+            guard let content = data else {
+                print("not returning data")
+                return
+            }
+            
+            
+            guard let json = (try? JSONSerialization.jsonObject(with: content, options: JSONSerialization.ReadingOptions.mutableContainers)) as? [String: Any] else {
+                print("Not containing JSON")
+                return
+            }
+            
+            if let photos = json["photos"] as? [String: Any] {
+                if let photo = photos["photo"] as? [Any] {
+                    for item in photo{
+                        let item = item as? [String: Any]
+                        
+                        let title = (item!["title"] as? String)!
+                        
+                        let farm = (item!["farm"] as? Int)!
+                        let server = (item!["server"] as? String)!
+                        let id = (item!["id"] as? String)!
+                        let secret = (item!["secret"] as? String)!
+                        
+                        let url = "https://farm\(farm).staticflickr.com/\(server)/\(id)_\(secret).jpg"
+                        
+                        let dog = Photo.init(title: title, id: id, url: url)
+                        dogArray.append(dog)
+                    }
+                }
+            }
+            
+            DispatchQueue.main.async {
+                self.collectionView?.reloadData()
+            }
+            
+        }
+        
+        task.resume()
+        
+    }
+    
 
 
 
